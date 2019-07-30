@@ -31,14 +31,6 @@ class Question(db.Model):
         self.answer_three = answer_three
         self.correct_answer = correct_answer
 
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-
-    def __repr__(self):
-        return '<User %r>' % self.username
-
 # Schema
 
 class QuestionSchema(ma.Schema):
@@ -72,6 +64,10 @@ def get_questions():
     all_questions = Question.query.all()
     result = questions_schema.dump(all_questions)
     return jsonify(result.data)
+
+
+
+
 # Run server
 if __name__ == '__main__':
     app.run(debug=True)
