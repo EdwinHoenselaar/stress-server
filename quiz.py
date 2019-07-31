@@ -98,6 +98,35 @@ def get_question(id):
     result = question_schema.dump(question)
     return jsonify(result.data)
 
+# Update question
+@app.route('/question/<id>', methods=['PUT'])
+def update_question(id):
+    put_question = Question.query.get(id)
+
+    question = request.json['question']
+    answer_one = request.json['answer_one']
+    answer_two = request.json['answer_two']
+    answer_three = request.json['answer_three']
+    correct_answer = request.json['correct_answer']
+
+    put_question.question = question
+    put_question.answer_one = answer_one
+    put_question.answer_two = answer_two
+    put_question.answer_three = answer_three
+    put_question.correct_answer = correct_answer
+
+    db.session.commit()
+
+    return question_schema.jsonify(put_question)
+
+# Delete question
+@app.route('/question/<id>', methods=['DELETE'])
+def delete_question(id):
+    question = Question.query.get(id)
+    db.session.delete(question)
+    db.session.commit()
+    return jsonify(result.data)
+
 # /End of routes
 
 
