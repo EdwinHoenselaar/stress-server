@@ -1,10 +1,13 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.sql.expression import func, select
 from flask_marshmallow import Marshmallow
+from flask_cors import CORS
 import os
 
 # Initialize app
 app = Flask(__name__)
+CORS(app)
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 # Database
@@ -31,15 +34,24 @@ class Question(db.Model):
         self.answer_three = answer_three
         self.correct_answer = correct_answer
 
-# Schema
-
+# Setting up schemas
 class QuestionSchema(ma.Schema):
     class Meta:
         fields = ('id', 'question', 'answer_one', 'answer_two', 'answer_three', 'correct_answer')
 
-# Init Schema
+class QuestionWithoutAnswerSchema(ma.Schema):
+    class Meta:
+        fields = ('id', 'question', 'answer_one', 'answer_two', 'answer_three')
+
+class AnswerSchema(ma.Schema):
+    class Meta:
+        fields = ('id', 'correct_answer')
+
+# Init Schemas
 question_schema = QuestionSchema(strict=True)
 questions_schema = QuestionSchema(many=True, strict=True)
+question_without_answer_schema = QuestionWithoutAnswerSchema(strict=True)
+answer_schema = AnswerSchema(strict=True)
 
 # Routes
 # Create question
@@ -65,6 +77,28 @@ def get_questions():
     result = questions_schema.dump(all_questions)
     return jsonify(result.data)
 
+# Get a random question
+@app.route('/question/random', methods=['GET'])
+def get_random_question():
+    random_question = Question.query.with_entities(Question.question, Question.answer_one, Question.answer_two, Question.answer_three, Question.id).order_by(func.random()).limit(1).one()
+    result = question_without_answer_schema.dump(random_question)
+    return jsonify(result.data)
+
+# Get one answer
+@app.route('/answer/<id>', methods=['GET'])
+def get_answer(id):
+    answer = Question.query.get(id)
+    result = answer_schema.dump(answer)
+    return jsonify(result.data)
+
+# Get one single question
+@app.route('/question/<id>', methods=['GET'])
+def get_question(id):
+    question = Question.query.get(id)
+    result = question_schema.dump(question)
+    return jsonify(result.data)
+
+# /End of routes
 
 
 
