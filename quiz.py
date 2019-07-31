@@ -125,7 +125,7 @@ def delete_question(id):
     question = Question.query.get(id)
     db.session.delete(question)
     db.session.commit()
-    return jsonify(result.data)
+    return question_schema.jsonify(question)
 
 # /End of routes
 
